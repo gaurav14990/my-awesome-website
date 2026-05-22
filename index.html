@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kart Battle Arena</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #273c75, #111827 60%, #050816);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      padding: 20px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      background: rgba(5, 8, 22, 0.55);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffd166;
+      letter-spacing: 1px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 24px;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+
+    nav a:hover {
+      color: #ffd166;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: center;
+      gap: 40px;
+      padding: 110px 8% 50px;
+    }
+
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: 0.95;
+      margin-bottom: 22px;
+      text-transform: uppercase;
+    }
+
+    .hero h1 span {
+      color: #06d6a0;
+      text-shadow: 0 0 25px rgba(6, 214, 160, 0.5);
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #d1d5db;
+      max-width: 590px;
+      line-height: 1.7;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    button, .btn {
+      border: none;
+      padding: 15px 24px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, #ffd166, #ef476f);
+      color: #111827;
+      box-shadow: 0 12px 30px rgba(239, 71, 111, 0.35);
+    }
+
+    .play-btn:hover {
+      transform: translateY(-4px) scale(1.03);
+    }
+
+    .outline-btn {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .outline-btn:hover {
+      border-color: #06d6a0;
+      color: #06d6a0;
+    }
+
+    .kart-card {
+      position: relative;
+      height: 430px;
+      border-radius: 34px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    .arena-road {
+      position: absolute;
+      width: 120%;
+      height: 170px;
+      bottom: 0;
+      left: -10%;
+      background: #2f3640;
+      transform: skewY(-8deg);
+      border-top: 8px dashed #ffd166;
+    }
+
+    .kart {
+      position: absolute;
+      left: 50%;
+      bottom: 85px;
+      width: 230px;
+      height: 110px;
+      transform: translateX(-50%);
+      animation: floatKart 2.3s ease-in-out infinite;
+    }
+
+    .kart-body {
+      width: 230px;
+      height: 72px;
+      background: linear-gradient(135deg, #ef476f, #ff9f1c);
+      border-radius: 30px 45px 25px 25px;
+      position: absolute;
+      bottom: 18px;
+      box-shadow: inset -12px -12px 0 rgba(0,0,0,0.12);
+    }
+
+    .kart-top {
+      width: 90px;
+      height: 65px;
+      background: #06d6a0;
+      border-radius: 45px 45px 10px 10px;
+      position: absolute;
+      left: 78px;
+      top: 0;
+      border: 5px solid rgba(255,255,255,0.2);
+    }
+
+    .wheel {
+      width: 52px;
+      height: 52px;
+      background: #111827;
+      border: 9px solid #d1d5db;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .wheel.left { left: 28px; }
+    .wheel.right { right: 28px; }
+
+    .weapon {
+      position: absolute;
+      width: 70px;
+      height: 20px;
+      background: #ffd166;
+      border-radius: 15px;
+      right: -30px;
+      bottom: 60px;
+      box-shadow: 0 0 18px #ffd166;
+    }
+
+    .coin {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      background: #ffd166;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(255, 209, 102, 0.6);
+      animation: coinMove 4s linear infinite;
+    }
+
+    .coin:nth-child(1) { top: 70px; left: 70px; animation-delay: 0s; }
+    .coin:nth-child(2) { top: 145px; right: 60px; animation-delay: 1s; }
+    .coin:nth-child(3) { top: 55px; right: 155px; animation-delay: 2s; }
+
+    @keyframes floatKart {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-18px); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes coinMove {
+      0%, 100% { transform: translateY(0) rotateY(0); }
+      50% { transform: translateY(-22px) rotateY(180deg); }
+    }
+
+    section {
+      padding: 70px 8%;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 42px;
+      margin-bottom: 40px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      padding: 30px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: 0.25s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,0.13);
+    }
+
+    .feature-card h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: #ffd166;
+    }
+
+    .feature-card p {
+      color: #d1d5db;
+      line-height: 1.6;
+    }
+
+    .game-box {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(0,0,0,0.35);
+      border-radius: 28px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    canvas {
+      width: 100%;
+      height: 420px;
+      background: #1f2937;
+      border-radius: 20px;
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      color: #d1d5db;
+    }
+
+    .score {
+      font-size: 20px;
+      font-weight: 800;
+      color: #06d6a0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 8%;
+      color: #9ca3af;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .buttons {
+        justify-content: center;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">KartRush</div>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#features">Features</a>
+      <a href="#play">Play Demo</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div>
+        <h1>Crazy Kart <span>Battle</span> Arena</h1>
+        <p>
+          Drive fast, collect glowing coins, dodge enemy blocks, and survive the arena.
+          This is a lightweight HTML, CSS, and JavaScript game website made for practice.
+        </p>
+        <div class="buttons">
+          <a href="#play"><button class="play-btn">Play Demo</button></a>
+          <a href="#features"><button class="outline-btn">See Features</button></a>
+        </div>
+      </div>
+
+      <div class="kart-card">
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="kart">
+          <div class="weapon"></div>
+          <div class="kart-top"></div>
+          <div class="kart-body"></div>
+          <div class="wheel left"></div>
+          <div class="wheel right"></div>
+        </div>
+        <div class="arena-road"></div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2 class="section-title">Game Features</h2>
+      <div class="features">
+        <div class="feature-card">
+          <h3>Fast Kart Action</h3>
+          <p>Move your kart around the arena using keyboard controls and avoid obstacles.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Coin Collection</h3>
+          <p>Collect yellow coins to increase your score and challenge your friends.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Simple Browser Game</h3>
+          <p>No installation needed. Open the HTML file in your browser and start playing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="play">
+      <h2 class="section-title">Play Demo</h2>
+      <div class="game-box">
+        <canvas id="gameCanvas" width="900" height="420"></canvas>
+        <div class="controls">
+          <div>Controls: Arrow Keys or W A S D</div>
+          <div class="score">Score: <span id="score">0</span></div>
+          <button class="play-btn" onclick="restartGame()">Restart</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 KartRush. Original practice project made with HTML, CSS and JavaScript.</p>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreText = document.getElementById('score');
+
+    let keys = {};
+    let score = 0;
+    let gameOver = false;
+
+    const player = {
+      x: 420,
+      y: 190,
+      w: 50,
+      h: 32,
+      speed: 5,
+      color: '#ef476f'
+    };
+
+    let coins = [];
+    let enemies = [];
+
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function createCoin() {
+      return {
+        x: random(30, canvas.width - 30),
+        y: random(30, canvas.height - 30),
+        r: 12
+      };
+    }
+
+    function createEnemy() {
+      return {
+        x: random(0, canvas.width - 45),
+        y: random(0, canvas.height - 45),
+        w: 38,
+        h: 38,
+        vx: random(-2.5, 2.5),
+        vy: random(-2.5, 2.5)
+      };
+    }
+
+    function restartGame() {
+      score = 0;
+      gameOver = false;
+      player.x = 420;
+      player.y = 190;
+      coins = [createCoin(), createCoin(), createCoin()];
+      enemies = [createEnemy(), createEnemy(), createEnemy()];
+      scoreText.textContent = score;
+      gameLoop();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      keys[e.key.toLowerCase()] = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    function movePlayer() {
+      if (keys['arrowup'] || keys['w']) player.y -= player.speed;
+      if (keys['arrowdown'] || keys['s']) player.y += player.speed;
+      if (keys['arrowleft'] || keys['a']) player.x -= player.speed;
+      if (keys['arrowright'] || keys['d']) player.x += player.speed;
+
+      player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
+    }
+
+    function updateEnemies() {
+      enemies.forEach(enemy => {
+        enemy.x += enemy.vx;
+        enemy.y += enemy.vy;
+
+        if (enemy.x <= 0 || enemy.x + enemy.w >= canvas.width) enemy.vx *= -1;
+        if (enemy.y <= 0 || enemy.y + enemy.h >= canvas.height) enemy.vy *= -1;
+      });
+    }
+
+    function isColliding(a, b) {
+      return a.x < b.x + b.w &&
+             a.x + a.w > b.x &&
+             a.y < b.y + b.h &&
+             a.y + a.h > b.y;
+    }
+
+    function checkCoinCollision() {
+      coins.forEach((coin, index) => {
+        const dx = player.x + player.w / 2 - coin.x;
+        const dy = player.y + player.h / 2 - coin.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < coin.r + 25) {
+          score += 10;
+          scoreText.textContent = score;
+          coins[index] = createCoin();
+
+          if (score % 50 === 0) {
+            enemies.push(createEnemy());
+          }
+        }
+      });
+    }
+
+    function checkEnemyCollision() {
+      enemies.forEach(enemy => {
+        if (isColliding(player, enemy)) {
+          gameOver = true;
+        }
+      });
+    }
+
+    function drawArena() {
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      for (let x = 0; x < canvas.width; x += 60) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 60) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+
+      ctx.fillStyle = '#ffd166';
+      ctx.fillRect(player.x + 8, player.y - 10, player.w - 16, 12);
+
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(player.x + 10, player.y + player.h + 3, 7, 0, Math.PI * 2);
+      ctx.arc(player.x + player.w - 10, player.y + player.h + 3, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawCoins() {
+      coins.forEach(coin => {
+        ctx.fillStyle = '#ffd166';
+        ctx.beginPath();
+        ctx.arc(coin.x, coin.y, coin.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('$', coin.x, coin.y + 5);
+      });
+    }
+
+    function drawEnemies() {
+      enemies.forEach(enemy => {
+        ctx.fillStyle = '#06d6a0';
+        ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('X', enemy.x + enemy.w / 2, enemy.y + 25);
+      });
+    }
+
+    function drawGameOver() {
+      ctx.fillStyle = 'rgba(0,0,0,0.65)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 20);
+
+      ctx.font = '22px Arial';
+      ctx.fillText('Click Restart to play again', canvas.width / 2, canvas.height / 2 + 25);
+    }
+
+    function gameLoop() {
+      if (gameOver) {
+        drawGameOver();
+        return;
+      }
+
+      drawArena();
+      movePlayer();
+      updateEnemies();
+      checkCoinCollision();
+      checkEnemyCollision();
+      drawCoins();
+      drawEnemies();
+      drawPlayer();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    restartGame();
+  </script>
+</body>
+</html>
